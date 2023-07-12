@@ -41,11 +41,12 @@ const usePollingPlugin: Plugin<any, any[]> = (
     },
     onFinally: () => {
       if (
+        // 轮询错误重试次数，设置为-1，表示轮询无数次
         pollingErrorRetryCount === -1 ||
-        // When an error occurs, the request is not repeated after pollingErrorRetryCount retries
+        // 如果当前已经轮询的次数 < 设置的轮询次数，继续轮询
         (pollingErrorRetryCount !== -1 && countRef.current <= pollingErrorRetryCount)
       ) {
-        // if pollingWhenHidden = false && document is hidden, then stop polling and subscribe revisible
+        // pollingWhenHidden = false 在页面隐藏时会暂时停止轮询
         if (!pollingWhenHidden && !isDocumentVisible()) {
           unsubscribeRef.current = subscribeReVisible(() => {
             fetchInstance.refresh();
@@ -53,13 +54,16 @@ const usePollingPlugin: Plugin<any, any[]> = (
           return;
         }
 
+        // 通过setTimeout进行轮询
         timerRef.current = setTimeout(() => {
           fetchInstance.refresh();
         }, pollingInterval);
       } else {
+        // 重置当前已轮询次数
         countRef.current = 0;
       }
     },
+    // 取消轮询
     onCancel: () => {
       stopPolling();
     },

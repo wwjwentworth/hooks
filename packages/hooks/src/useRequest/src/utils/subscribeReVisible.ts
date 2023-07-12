@@ -19,6 +19,7 @@ if (canUseDom()) {
       listener();
     }
   };
+  // 当页面可见之后，执行监听函数
   window.addEventListener('visibilitychange', revalidate, false);
 }
 
