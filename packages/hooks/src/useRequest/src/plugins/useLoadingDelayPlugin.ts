@@ -18,6 +18,7 @@ const useLoadingDelayPlugin: Plugin<any, any[]> = (fetchInstance, { loadingDelay
     onBefore: () => {
       cancelTimeout();
 
+      // 通过setTimeout，延迟修改loading的状态
       timerRef.current = setTimeout(() => {
         fetchInstance.setState({
           loading: true,
