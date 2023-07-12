@@ -31,6 +31,7 @@ const useAutoRunPlugin: Plugin<any, any[]> = (
     }
   }, [...refreshDeps]);
 
+  // 如果ready设置为了true，请求不会被执行 stopNow 返回 true
   return {
     onBefore: () => {
       if (!ready) {

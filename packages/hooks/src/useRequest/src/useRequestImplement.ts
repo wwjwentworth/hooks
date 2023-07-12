@@ -24,7 +24,9 @@ function useRequestImplement<TData, TParams extends any[]>(
 
   const update = useUpdate();
 
+  // Fetch为单例模式，保证请求实例不会发生改变
   const fetchInstance = useCreation(() => {
+    // 目前只有useAutoRunPlugin 这个plugin有onInit这个方法
     const initState = plugins.map((p) => p?.onInit?.(fetchOptions)).filter(Boolean);
 
     return new Fetch<TData, TParams>(
@@ -34,11 +36,14 @@ function useRequestImplement<TData, TParams extends any[]>(
       Object.assign({}, ...initState),
     );
   }, []);
+
   fetchInstance.options = fetchOptions;
-  // run all plugins hooks
+
+  // 执行所有Plugin
   fetchInstance.pluginImpls = plugins.map((p) => p(fetchInstance, fetchOptions));
 
   useMount(() => {
+    // 如果是自动请求的情况，执行run方法
     if (!manual) {
       // useCachePlugin can set fetchInstance.state.params from cache when init
       const params = fetchInstance.state.params || options.defaultParams || [];
@@ -47,6 +52,7 @@ function useRequestImplement<TData, TParams extends any[]>(
     }
   });
 
+  // 执行cancel取消方法
   useUnmount(() => {
     fetchInstance.cancel();
   });

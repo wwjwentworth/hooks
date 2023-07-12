@@ -6,7 +6,6 @@ export type Service<TData, TParams extends any[]> = (...args: TParams) => Promis
 export type Subscribe = () => void;
 
 // for Fetch
-
 export interface FetchState<TData, TParams extends any[]> {
   loading: boolean;
   params?: TParams;
@@ -37,60 +36,62 @@ export interface PluginReturn<TData, TParams extends any[]> {
 }
 
 // for useRequestImplement
-
 export interface Options<TData, TParams extends any[]> {
-  manual?: boolean;
+  manual?: boolean; // 是否手动触发，默认自动触发
 
+  // 请求之前触发
   onBefore?: (params: TParams) => void;
+  // 请求被成功执行后的回调函数
   onSuccess?: (data: TData, params: TParams) => void;
+  // 请求失败后的回调函数
   onError?: (e: Error, params: TParams) => void;
-  // formatResult?: (res: any) => TData;
+  // 请求完成触发（成功、失败都算完成）
   onFinally?: (params: TParams, data?: TData, e?: Error) => void;
 
+  // 首次默认执行时，传递给 service 的参数
   defaultParams?: TParams;
 
-  // refreshDeps
+  // 重新发起请求的依赖列表
   refreshDeps?: DependencyList;
   refreshDepsAction?: () => void;
 
-  // loading delay
+  // 设置 loading 变成 true 的延迟时间
   loadingDelay?: number;
 
-  // polling
-  pollingInterval?: number;
-  pollingWhenHidden?: boolean;
-  pollingErrorRetryCount?: number;
+  // 轮询模式
+  pollingInterval?: number; // 轮询间隔，单位为毫秒。如果值大于 0，则启动轮询模式。
 
-  // refresh on window focus
-  refreshOnWindowFocus?: boolean;
-  focusTimespan?: number;
+  pollingWhenHidden?: boolean; // 在页面隐藏时，是否继续轮询。如果设置为 false，在页面隐藏时会暂时停止轮询，页面重新显示时继续上次轮询
+  pollingErrorRetryCount?: number; // 轮询错误重试次数。如果设置为 -1，则无限次
 
-  // debounce
+  // 屏幕聚焦重新请求
+  refreshOnWindowFocus?: boolean; // 在屏幕重新获取焦点或重新显示时，重新发起请求
+  focusTimespan?: number; // 重新请求间隔，单位为毫秒
+
+  // 防抖
   debounceWait?: number;
   debounceLeading?: boolean;
   debounceTrailing?: boolean;
   debounceMaxWait?: number;
 
-  // throttle
+  // 节流
   throttleWait?: number;
   throttleLeading?: boolean;
   throttleTrailing?: boolean;
 
-  // cache
+  // 数据缓存
   cacheKey?: string;
   cacheTime?: number;
   staleTime?: number;
   setCache?: (data: CachedData<TData, TParams>) => void;
   getCache?: (params: TParams) => CachedData<TData, TParams> | undefined;
 
-  // retry
-  retryCount?: number;
-  retryInterval?: number;
+  // 错误重试
+  retryCount?: number; // 错误重试次数。如果设置为 -1，则无限次重试。
+  retryInterval?: number; //重试时间间隔，单位为毫秒。
 
-  // ready
+  // 开始自动请求的条件
   ready?: boolean;
-
-  // [key: string]: any;
 }
 
 export type Plugin<TData, TParams extends any[]> = {
@@ -100,13 +101,6 @@ export type Plugin<TData, TParams extends any[]> = {
   >;
   onInit?: (options: Options<TData, TParams>) => Partial<FetchState<TData, TParams>>;
 };
-
-// for index
-// export type OptionsWithoutFormat<TData, TParams extends any[]> = Omit<Options<TData, TParams>, 'formatResult'>;
-
-// export interface OptionsWithFormat<TData, TParams extends any[], TFormated, TTFormated extends TFormated = any> extends Omit<Options<TTFormated, TParams>, 'formatResult'> {
-//   formatResult: (res: TData) => TFormated;
-// };
 
 export interface Result<TData, TParams extends any[]> {
   loading: boolean;

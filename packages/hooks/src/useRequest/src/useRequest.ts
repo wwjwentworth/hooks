@@ -1,3 +1,4 @@
+// 插件方法，useRequest 的 核心原理就是 plugin机制
 import useAutoRunPlugin from './plugins/useAutoRunPlugin';
 import useCachePlugin from './plugins/useCachePlugin';
 import useDebouncePlugin from './plugins/useDebouncePlugin';
@@ -9,22 +10,13 @@ import useThrottlePlugin from './plugins/useThrottlePlugin';
 import type { Options, Plugin, Service } from './types';
 import useRequestImplement from './useRequestImplement';
 
-// function useRequest<TData, TParams extends any[], TFormated, TTFormated extends TFormated = any>(
-//   service: Service<TData, TParams>,
-//   options: OptionsWithFormat<TData, TParams, TFormated, TTFormated>,
-//   plugins?: Plugin<TData, TParams>[],
-// ): Result<TFormated, TParams>
-// function useRequest<TData, TParams extends any[]>(
-//   service: Service<TData, TParams>,
-//   options?: OptionsWithoutFormat<TData, TParams>,
-//   plugins?: Plugin<TData, TParams>[],
-// ): Result<TData, TParams>
 function useRequest<TData, TParams extends any[]>(
   service: Service<TData, TParams>,
   options?: Options<TData, TParams>,
   plugins?: Plugin<TData, TParams>[],
 ) {
   return useRequestImplement<TData, TParams>(service, options, [
+    // 用户自定义插件列表，官方文档里没有相关使用方法，不推荐使用
     ...(plugins || []),
     useDebouncePlugin,
     useLoadingDelayPlugin,
