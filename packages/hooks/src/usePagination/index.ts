@@ -12,6 +12,7 @@ const usePagination = <TData extends Data, TParams extends Params>(
 
   const result = useRequest(service, {
     defaultParams: [{ current: 1, pageSize: defaultPageSize }],
+    // 依赖变化更新，如果有的话
     refreshDepsAction: () => {
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       changeCurrent(1);
@@ -19,14 +20,21 @@ const usePagination = <TData extends Data, TParams extends Params>(
     ...rest,
   });
 
+  // 默认参数
   const { current = 1, pageSize = defaultPageSize } = result.params[0] || {};
 
+  // 接口返回的数据总条数
   const total = result.data?.total || 0;
+  // 计算分页
   const totalPage = useMemo(() => Math.ceil(total / pageSize), [pageSize, total]);
 
+  // current pageSize
   const onChange = (c: number, p: number) => {
+    // 当前分页最小为1
     let toCurrent = c <= 0 ? 1 : c;
+    // 分页大小最小为1
     const toPageSize = p <= 0 ? 1 : p;
+    // 重新计算分页
     const tempTotalPage = Math.ceil(total / toPageSize);
     if (toCurrent > tempTotalPage) {
       toCurrent = Math.max(1, tempTotalPage);

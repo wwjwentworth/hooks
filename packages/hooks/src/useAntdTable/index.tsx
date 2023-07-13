@@ -17,7 +17,9 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
   options: AntdTableOptions<TData, TParams> = {},
 ) => {
   const {
+    // form表单实例
     form,
+    // 默认表单选项
     defaultType = 'simple',
     defaultParams,
     manual = false,
@@ -26,6 +28,7 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
     ...rest
   } = options;
 
+  // usePagination 也是 useRequest再次封装
   const result = usePagination<TData, TParams>(service, {
     manual: true,
     ...rest,
