@@ -12,21 +12,35 @@ const useInfiniteScroll = <TData extends Data>(
   options: InfiniteScrollOptions<TData> = {},
 ) => {
   const {
+    // 父级容器，如果存在，则在滚动到底部的时候，自动触发loadMore，需要配合isNoMore使用，以便知道什么时候到最后一页了
     target,
+    // 是否还有更多的逻辑判断，入参是当前已经聚合后的data
     isNoMore,
+    // 下拉自动加载，距离底部的阙值
     threshold = 100,
+    // 依赖变化，自动更新
     reloadDeps = [],
+    // 是否手动执行，默认为false
     manual,
+    // service执行前执行
     onBefore,
+    // service执行成功之后
     onSuccess,
+    // service执行失败
     onError,
+    // service执行完成（成功或者失败）
     onFinally,
   } = options;
 
+  // 最终的数据
   const [finalData, setFinalData] = useState<TData>();
+  // 是否正在加载更多
   const [loadingMore, setLoadingMore] = useState(false);
 
+  // 判断是否还有更多数据，finalData改变之后更新
   const noMore = useMemo(() => {
+    // 如果isNoMore没有传入，返回false
+    // 否则将finalData传入isNoMore，判断isNoMore是否返回true
     if (!isNoMore) return false;
     return isNoMore(finalData);
   }, [finalData]);
@@ -34,9 +48,11 @@ const useInfiniteScroll = <TData extends Data>(
   const { loading, run, runAsync, cancel } = useRequest(
     async (lastData?: TData) => {
       const currentData = await service(lastData);
+      // 第一次请求lastData还不存在
       if (!lastData) {
         setFinalData(currentData);
       } else {
+        // 加载之后聚合finalData
         setFinalData({
           ...currentData,
           // @ts-ignore
