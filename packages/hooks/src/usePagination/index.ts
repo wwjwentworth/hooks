@@ -4,15 +4,17 @@ import useRequest from '../useRequest';
 
 import type { Data, PaginationOptions, Params, Service, PaginationResult } from './types';
 
+// service约定返回的数据结构为 {total: number, list: Item[]}
 const usePagination = <TData extends Data, TParams extends Params>(
   service: Service<TData, TParams>,
   options: PaginationOptions<TData, TParams> = {},
 ) => {
   const { defaultPageSize = 10, ...rest } = options;
 
+  // 默认分页数据为 { current: 1, pageSize: 10 }, 并根据分页和返回的total计算出总的分页
   const result = useRequest(service, {
     defaultParams: [{ current: 1, pageSize: defaultPageSize }],
-    // 依赖变化更新，如果有的话
+    // 依赖变化更新，如果有的话，重置current为1
     refreshDepsAction: () => {
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       changeCurrent(1);

@@ -5,11 +5,15 @@ const useDynamicList = <T>(initialList: T[] = []) => {
 
   const keyList = useRef<number[]>([]);
 
+  // 设置唯一的key，通过ref保证key的唯一性
   const setKey = useCallback((index: number) => {
+    // 每次都+1
     counterRef.current += 1;
+    // 值得学习：将map改为splice
     keyList.current.splice(index, 0, counterRef.current);
   }, []);
 
+  // 设置初始数据
   const [list, setList] = useState(() => {
     initialList.forEach((_, index) => {
       setKey(index);
@@ -17,6 +21,7 @@ const useDynamicList = <T>(initialList: T[] = []) => {
     return initialList;
   });
 
+  // 重置数据
   const resetList = useCallback((newList: T[]) => {
     keyList.current = [];
     setList(() => {
@@ -27,6 +32,7 @@ const useDynamicList = <T>(initialList: T[] = []) => {
     });
   }, []);
 
+  // 插入
   const insert = useCallback((index: number, item: T) => {
     setList((l) => {
       const temp = [...l];
@@ -67,7 +73,7 @@ const useDynamicList = <T>(initialList: T[] = []) => {
       const temp = [...l];
       temp.splice(index, 1);
 
-      // remove keys if necessary
+      // 同时移出key
       try {
         keyList.current.splice(index, 1);
       } catch (e) {
