@@ -10,13 +10,17 @@ import { isNumber } from '../utils';
 export interface Options<T> {
   containerTarget: BasicTarget;
   wrapperTarget: BasicTarget;
+  // 行高度，静态高度可以直接写入像素值，动态高度可以传入函数计算
   itemHeight: number | ((index: number, data: T) => number);
+  // 视区上、下额外展示的 DOM 节点数量
   overscan?: number;
 }
 
+// 原理：监听外部容器的scroll事件以及size发生变化的时候，触发计算逻辑算出内部容器的高度和martinTop的值
 const useVirtualList = <T = any>(list: T[], options: Options<T>) => {
   const { containerTarget, wrapperTarget, itemHeight, overscan = 5 } = options;
 
+  // 获取行高度并做缓存
   const itemHeightRef = useLatest(itemHeight);
 
   const size = useSize(containerTarget);
@@ -25,6 +29,7 @@ const useVirtualList = <T = any>(list: T[], options: Options<T>) => {
 
   const [targetList, setTargetList] = useState<{ index: number; data: T }[]>([]);
 
+  // 可视区域的DOM个数
   const getVisibleCount = (containerHeight: number, fromIndex: number) => {
     if (isNumber(itemHeightRef.current)) {
       return Math.ceil(containerHeight / itemHeightRef.current);
@@ -43,12 +48,15 @@ const useVirtualList = <T = any>(list: T[], options: Options<T>) => {
     return endIndex - fromIndex;
   };
 
+  // 根据外部容器的scrollTop计算出已经滚动过多少个item
   const getOffset = (scrollTop: number) => {
+    // itemHeight是静态的，直接计算
     if (isNumber(itemHeightRef.current)) {
       return Math.floor(scrollTop / itemHeightRef.current) + 1;
     }
     let sum = 0;
     let offset = 0;
+    // itemHeightRef是动态的
     for (let i = 0; i < list.length; i++) {
       const height = itemHeightRef.current(i, list[i]);
       sum += height;
@@ -73,6 +81,7 @@ const useVirtualList = <T = any>(list: T[], options: Options<T>) => {
     return height;
   };
 
+  // 获取wrapper总高度
   const totalHeight = useMemo(() => {
     if (isNumber(itemHeightRef.current)) {
       return list.length * itemHeightRef.current;
@@ -82,16 +91,22 @@ const useVirtualList = <T = any>(list: T[], options: Options<T>) => {
   }, [list]);
 
   const calculateRange = () => {
+    // 外部容器
     const container = getTargetElement(containerTarget);
+    // 内部容器
     const wrapper = getTargetElement(wrapperTarget);
 
     if (container && wrapper) {
       const { scrollTop, clientHeight } = container;
 
+      // 根据外部容器的scrollTop计算出已经滚动过多少个item
       const offset = getOffset(scrollTop);
+      // 根据外部容器的高度计算出可视区域的Item个数
       const visibleCount = getVisibleCount(clientHeight, offset);
 
+      // 开始的下标
       const start = Math.max(0, offset - overscan);
+      // 结束的下标
       const end = Math.min(list.length, offset + visibleCount + overscan);
 
       const offsetTop = getDistanceTop(start);
@@ -111,12 +126,14 @@ const useVirtualList = <T = any>(list: T[], options: Options<T>) => {
   };
 
   useEffect(() => {
+    // 当外部容器的宽高发生改变之后，触发计算逻辑
     if (!size?.width || !size?.height) {
       return;
     }
     calculateRange();
   }, [size?.width, size?.height, list]);
 
+  // 监听外部容器的scroll事件
   useEventListener(
     'scroll',
     (e) => {
@@ -128,6 +145,7 @@ const useVirtualList = <T = any>(list: T[], options: Options<T>) => {
       calculateRange();
     },
     {
+      // 外部容器
       target: containerTarget,
     },
   );
