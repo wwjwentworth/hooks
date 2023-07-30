@@ -22,6 +22,7 @@ const dumpIndex = <T>(step: number, arr: T[]) => {
   return index;
 };
 
+// 将targetArr分成3个状态 之前、现在、未来
 const split = <T>(step: number, targetArr: T[]) => {
   const index = dumpIndex(step, targetArr);
   return {
@@ -31,9 +32,10 @@ const split = <T>(step: number, targetArr: T[]) => {
   };
 };
 
+// initialValue 初始值
 export default function useHistoryTravel<T>(initialValue?: T) {
   const [history, setHistory] = useState<IData<T | undefined>>({
-    present: initialValue,
+    present: initialValue, // 当前的值
     past: [],
     future: [],
   });
@@ -42,6 +44,7 @@ export default function useHistoryTravel<T>(initialValue?: T) {
 
   const initialValueRef = useRef(initialValue);
 
+  // 重置到初始值，或提供一个新的初始值
   const reset = (...params: any[]) => {
     const _initial = params.length > 0 ? params[0] : initialValueRef.current;
     initialValueRef.current = _initial;
@@ -53,6 +56,7 @@ export default function useHistoryTravel<T>(initialValue?: T) {
     });
   };
 
+  // 更新值， 都是往过去的list中添加
   const updateValue = (val: T) => {
     setHistory({
       present: val,
@@ -62,6 +66,7 @@ export default function useHistoryTravel<T>(initialValue?: T) {
   };
 
   const _forward = (step: number = 1) => {
+    // 如果future队列为空，不执行
     if (future.length === 0) {
       return;
     }
@@ -98,17 +103,17 @@ export default function useHistoryTravel<T>(initialValue?: T) {
   };
 
   return {
-    value: present,
-    backLength: past.length,
-    forwardLength: future.length,
-    setValue: useMemoizedFn(updateValue),
-    go: useMemoizedFn(go),
+    value: present, // 当前值
+    backLength: past.length, // 可回退历史长度
+    forwardLength: future.length, // 可前进历史长度
+    setValue: useMemoizedFn(updateValue), // 设置value
+    go: useMemoizedFn(go), // 前进步数, step < 0 为后退， step > 0 时为前进
     back: useMemoizedFn(() => {
       go(-1);
-    }),
+    }), // 向后回退一步
     forward: useMemoizedFn(() => {
       go(1);
-    }),
-    reset: useMemoizedFn(reset),
+    }), // 向前前进异步
+    reset: useMemoizedFn(reset), // 重置到初始值，或提供一个新的初始值
   };
 }
