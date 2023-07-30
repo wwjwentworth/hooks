@@ -3,19 +3,20 @@ import useMemoizedFn from '../useMemoizedFn';
 import { isNumber } from '../utils';
 
 export interface Options {
-  min?: number;
-  max?: number;
+  min?: number; // 最小值
+  max?: number; // 最大值
 }
 
 export interface Actions {
-  inc: (delta?: number) => void;
-  dec: (delta?: number) => void;
-  set: (value: number | ((c: number) => number)) => void;
-  reset: () => void;
+  inc: (delta?: number) => void; // 加 默认加1
+  dec: (delta?: number) => void; // 减 默认减1
+  set: (value: number | ((c: number) => number)) => void; // 设置为指定的值
+  reset: () => void; // 重置为current
 }
 
 export type ValueParam = number | ((c: number) => number);
 
+// 不能超出[min, max]范围
 function getTargetValue(val: number, options: Options = {}) {
   const { min, max } = options;
   let target = val;

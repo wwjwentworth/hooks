@@ -50,6 +50,7 @@ function getRectFromSelection(selection: Selection | null): Rect {
 }
 
 function useTextSelection(target?: BasicTarget<Document | Element>): State {
+  // 所选文本的内容和位置
   const [state, setState] = useState(initState);
 
   const stateRef = useRef(state);
