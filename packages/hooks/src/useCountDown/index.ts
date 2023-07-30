@@ -5,9 +5,9 @@ import useLatest from '../useLatest';
 export type TDate = Date | number | string | undefined;
 
 export type Options = {
-  targetDate?: TDate;
-  interval?: number;
-  onEnd?: () => void;
+  targetDate?: TDate; // 目标时间
+  interval?: number; // 变化时间间隔 毫秒
+  onEnd?: () => void; // 倒计时结束触发
 };
 
 export interface FormattedRes {
@@ -18,6 +18,8 @@ export interface FormattedRes {
   milliseconds: number;
 }
 
+// 计算剩余时间
+// t: 目标时间
 const calcLeft = (t?: TDate) => {
   if (!t) {
     return 0;
@@ -43,11 +45,14 @@ const parseMs = (milliseconds: number): FormattedRes => {
 const useCountdown = (options?: Options) => {
   const { targetDate, interval = 1000, onEnd } = options || {};
 
+  // 通过目标时间计算剩余时间
   const [timeLeft, setTimeLeft] = useState(() => calcLeft(targetDate));
 
+  // 缓存onEnd函数
   const onEndRef = useLatest(onEnd);
 
   useEffect(() => {
+    // 目标时间不存在，剩余时长为0
     if (!targetDate) {
       // for stop
       setTimeLeft(0);
@@ -58,6 +63,7 @@ const useCountdown = (options?: Options) => {
     setTimeLeft(calcLeft(targetDate));
 
     const timer = setInterval(() => {
+      // 学习：通过当前时间与目标时间的间隔计算剩余时间
       const targetLeft = calcLeft(targetDate);
       setTimeLeft(targetLeft);
       if (targetLeft === 0) {
@@ -73,6 +79,7 @@ const useCountdown = (options?: Options) => {
     return parseMs(timeLeft);
   }, [timeLeft]);
 
+  // 返回倒计时间戳（毫秒）格式化后的倒计时
   return [timeLeft, formattedRes] as const;
 };
 
