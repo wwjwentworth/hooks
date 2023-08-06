@@ -7,17 +7,21 @@ interface Handle {
 }
 
 const setRafInterval = function (callback: () => void, delay: number = 0): Handle {
+  // 如果浏览器不支持requestAnimationFrame, 还是使用setInterval
   if (typeof requestAnimationFrame === typeof undefined) {
     return {
       id: setInterval(callback, delay),
     };
   }
+  // 开始时间
   let start = new Date().getTime();
   const handle: Handle = {
     id: 0,
   };
   const loop = () => {
+    // 当前时间
     const current = new Date().getTime();
+    // 如果当前时间 - 开始时间 > 设置的时间间隔，执行回调函数，并重新计算开始时间
     if (current - start >= delay) {
       callback();
       start = new Date().getTime();
